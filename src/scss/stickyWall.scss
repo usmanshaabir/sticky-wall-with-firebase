@@ -1,0 +1,22 @@
+.center-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 97vh;
+  /* Set the height to cover the full viewport */
+}
+
+.ant-layout {
+  padding: 26px;
+  border-radius: 20px;
+  padding-top: 15px;
+}
+
+:where(.css-dev-only-do-not-override-byeoj0).ant-btn-text:not(:disabled):not(.ant-btn-disabled):hover {
+  color: rgba(0, 0, 0, 0.88);
+  background-color: #f5f5f5;
+}
+.ant-layout-content{
+  margin: 0px !important;
+  padding: 15px !important;
+}
