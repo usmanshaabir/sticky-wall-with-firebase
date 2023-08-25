@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { MenuFoldOutlined, MenuUnfoldOutlined, CalendarOutlined, DoubleRightOutlined, UnorderedListOutlined, SettingOutlined, AntDesignOutlined } from '@ant-design/icons';
-import { Layout, Menu, Button, theme, Input, Card, Modal, Form, DatePicker, ColorPicker, Col, Row } from 'antd';
+import { MenuFoldOutlined, MenuUnfoldOutlined, DoubleRightOutlined, UnorderedListOutlined, SettingOutlined, AntDesignOutlined } from '@ant-design/icons';
+import { Layout, Menu, Button, theme, Input, Card, Modal, Form, DatePicker, ColorPicker, Col, } from 'antd';
 import { firestore } from '../../../config/firebase';
 import moment from 'moment';
 import { Checkbox } from 'antd';
@@ -250,8 +250,8 @@ export default function StickyHome() {
                     return (
                       <Col span={8} key={index} style={{ marginBottom: 16 }}>
                         <Card title={item?.userData?.title} className='me-4 mt-2' style={{ backgroundColor: `#${item?.userData?.color}` }}>
-                          <p>{item?.userData?.description}</p>
-                          <h6>{item?.userData?.date}</h6>
+                          <p className='text-white'>{item?.userData?.description}</p>
+                          <h6 className='text-white'>{item?.userData?.date}</h6>
                           <div className="checkbox-container">
                             {item?.userData?.checkboxes?.map((checkboxValue) => (
                               <span key={checkboxValue} className={checkboxValue === "Personal" ? 'checkbox-value' : "checkbox-values"}>
