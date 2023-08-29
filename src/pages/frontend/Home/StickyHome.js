@@ -3,15 +3,16 @@ import { MenuFoldOutlined, MenuUnfoldOutlined, DoubleRightOutlined, UnorderedLis
 import { Layout, Menu, Button, theme, Input, Card, Modal, Form, DatePicker, ColorPicker, Col, } from 'antd';
 import { firestore } from '../../../config/firebase';
 import moment from 'moment';
+import dayjs from 'dayjs';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 import { Checkbox } from 'antd';
 import { collection, deleteDoc, doc, getDocs, setDoc, updateDoc } from 'firebase/firestore';
 const { Sider, Content } = Layout;
-
-
-const initState = { title: '', description: '', date: '' }
+const initState = { title: '', date: '' }
 
 export default function StickyHome() {
-  const today = new Date().toISOString().split('T')[0];
+  const today = dayjs().format('YYYY-MM-DD');
   const [collapsed, setCollapsed] = useState(false);
   const [searchVisible, setSearchVisible] = useState(true);
   const { token: { colorBgContainer } } = theme.useToken();
@@ -23,27 +24,24 @@ export default function StickyHome() {
   const [fetch, setFetch] = useState([])
   const [selectedColor, setSelectedColor] = useState('#ffffff');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedDate, setSelectedDate] = useState(null); //step 1
+  const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTag, setSelectedTag] = useState(null);
-
-
+  const [value, setValue] = useState('');
   const { Search } = Input;
   const { TextArea } = Input;
   const onSearch = (value) => console.log(value);
 
   const upcomingNotes = fetch.filter(item => item.userData.date > today);
   const todayNotes = fetch.filter(item => item.userData.date === today);
-  const calender = fetch.filter(item => item.userData.date === selectedDate)
+  const calender = fetch.filter(item => item.userData.date === selectedDate);
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
     setSearchVisible(true);
   };
-
   const showModal = () => {
     setIsModalOpen(true);
   };
-
   const handleColorChange = (color) => {
     setSelectedColor(color.toHex());
   };
@@ -56,17 +54,14 @@ export default function StickyHome() {
     setIsModalUpdate(false);
   }
   const handleOk = async () => {
-    const { title, description, date } = state
-    const userData = { title, description, date, color: selectedColor, checkboxes: selectedCheckboxes, id: Math.random().toString(36).slice(2) };
-
+    const { title, date } = state;
+    const userData = { title, description:value, date, color: selectedColor, checkboxes: selectedCheckboxes, id: Math.random().toString(36).slice(2) };
     try {
       await setDoc(doc(firestore, "stickyUser", userData.id), { userData });
-      console.log("data stored in fire base Successfully")
+      console.log("data stored in firebase Successfully");
+    } catch (error) {
+      console.error(error);
     }
-    catch (error) {
-      console.error(error)
-    }
-
     setIsModalOpen(false);
   };
   const handleCancel = () => {
@@ -75,32 +70,29 @@ export default function StickyHome() {
   const handleDateAndColor = (fieldName, value) => {
     setState((prevState) => ({ ...prevState, [fieldName]: value }));
   }
-
   const handleChange = (event) => {
     setState((prevState) => ({ ...prevState, [event.target.name]: event.target.value }))
-
   }
-
   const fetchData = async () => {
     try {
-      let data = [];
+      let array = [];
       const querySnapshot = await getDocs(collection(firestore, "stickyUser"));
       querySnapshot.forEach((doc) => {
-        const userData = doc.data();
-        data.push(userData);
-        console.log(doc.id, " => ", doc.data());
+        array.push(doc.data());
+        console.log("userData fff", array)
       });
-      setFetch(data);
+      setFetch(array);
+      console.log("setFetch", fetch)
     } catch (error) {
       console.error(error);
     }
   };
-
   useEffect(() => {
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
 
   const handleDelete = async (itemId) => {
+    console.log("Deleting document with ID:", itemId);
     try {
       await deleteDoc(doc(firestore, "stickyUser", itemId));
       console.log("Document successfully deleted!");
@@ -116,7 +108,6 @@ export default function StickyHome() {
     const { name, value } = event.target;
     setUpdateData((prevData) => ({ ...prevData, [name]: value, }));
   };
-
   const handleDateAndColorUpdate = (fieldName, value) => {
     setUpdateData((prevData) => ({ ...prevData, [fieldName]: value, }));
   };
@@ -125,7 +116,6 @@ export default function StickyHome() {
     setUpdateData((prevData) => ({ ...prevData, color: color.toHex(), }));
   };
   const handleOkUpdate = async () => {
-    // Update the data in Firestore using updateDoc function
     try {
       const noteRef = doc(firestore, "stickyUser", updateData.id);
       await updateDoc(noteRef, { userData: updateData });
@@ -137,9 +127,6 @@ export default function StickyHome() {
     }
     setIsModalUpdate(false);
   };
-  // const handleCheckBox = (CheckboxChangeEvent) => {
-  //   console.log(`checked = ${CheckboxChangeEvent.target.checked}`);
-  // };
   const handleCheckBox = (CheckboxChangeEvent, value) => {
     const checkboxValue = CheckboxChangeEvent.target.value;
     if (CheckboxChangeEvent.target.checked) {
@@ -164,8 +151,12 @@ export default function StickyHome() {
       return fetch.filter(item => !selectedTag || item.userData.checkboxes.includes(selectedTag));
     }
   };
+  const category = (days) => {
+    setSelectedCategory(days)
+    setSelectedTag(null)
+    console.log("tags" ,selectedTag)
 
-
+  }
 
   return (
     <>
@@ -184,16 +175,16 @@ export default function StickyHome() {
               </div>
               <Menu style={{ backgroundColor: '#f5f5f5' }} mode="inline" defaultSelectedKeys={['1']} selectedKeys={[selectedCategory]}>
                 <h6 className='pt-3 pb-2'>TASKS</h6>
-                <Menu.Item key="1" icon={<DoubleRightOutlined />} onClick={() => setSelectedCategory('upcoming')}>
+                <Menu.Item key="1" icon={<DoubleRightOutlined />} onClick={() => category('upcoming')}>
                   Upcoming
                 </Menu.Item>
-                <Menu.Item key="2" icon={<MenuUnfoldOutlined />} onClick={() => setSelectedCategory('today')}>
+                <Menu.Item key="2" icon={<MenuUnfoldOutlined />} onClick={() => category('today')}>
                   Today
                 </Menu.Item>
                 <Menu.Item key="3">
-                  <DatePicker onChange={(date, dateString) => handleSideDate(dateString)} onClick={() => setSelectedCategory('calender')} />
+                  <DatePicker onChange={(date, dateString) => handleSideDate(dateString)} onClick={() => category('calender')} />
                 </Menu.Item>
-                <Menu.Item key="4" icon={<UnorderedListOutlined />} onClick={() => setSelectedCategory('all')}>
+                <Menu.Item key="4" icon={<UnorderedListOutlined />} onClick={() => category('all')}>
                   Sticky Wall
                 </Menu.Item>
               </Menu>
@@ -223,7 +214,6 @@ export default function StickyHome() {
                     </div>
                   </div>
                 </Menu.Item>
-
                 <Menu.Item>
                   <div style={{ position: "relative" }}>
                     <div style={{ backgroundColor: '#f5cf56', width: '20px', height: '20px', }}><span style={{ position: 'absolute', top: '-12px', right: '105px' }}>List</span></div>
@@ -245,33 +235,35 @@ export default function StickyHome() {
             <Layout style={{ maxHeight: '70vh', overflowY: 'auto' }}>
               <h4>Sticky Wall</h4>
               <Content style={{ margin: '24px 16px', padding: 24, backgroundColor: '#f5f5f5', maxHeight: 'calc(100vh - 48px)', overflowY: 'auto' }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', }}>
-                  {getFilteredNotes().map((item, index) => {
-                    return (
-                      <Col span={8} key={index} style={{ marginBottom: 16 }}>
-                        <Card title={item?.userData?.title} className='me-4 mt-2' style={{ backgroundColor: `#${item?.userData?.color}` }}>
-                          <p className='text-white'>{item?.userData?.description}</p>
-                          <h6 className='text-white'>{item?.userData?.date}</h6>
-                          <div className="checkbox-container">
-                            {item?.userData?.checkboxes?.map((checkboxValue) => (
-                              <span key={checkboxValue} className={checkboxValue === "Personal" ? 'checkbox-value' : "checkbox-values"}>
-                                {checkboxValue}
-                              </span>
-                            ))}
-                          </div>
-                          <div className='d-flex justify-content-between'>
-                            <Button type='primary' onClick={() => handleDelete(item?.userData?.id)}>
-                              Delete
-                            </Button>
-                            <Button type='primary' style={{ backgroundColor: 'green', color: 'white' }} onClick={() => showModalUpdate(item?.userData)}>
-                              Update
-                            </Button>
-                          </div>
-                        </Card>
-                      </Col>
-                    )
-                  })}
-
+                <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                  {getFilteredNotes().map((item, index) => (
+                    <Col span={8} key={index} style={{ marginBottom: 16 }}>
+                      <Card
+                        title={item?.userData?.title}
+                        className='me-4 mt-2'
+                        style={{ backgroundColor: `#${item?.userData?.color}` }}
+                      >
+                        {/* <p className='text-white'>{item?.userData?.description}</p> */}
+                        <div dangerouslySetInnerHTML={{ __html: item?.userData?.description }} />
+                        {item?.userData?.date && <h6 className='text-white'>{item.userData.date}</h6>}
+                        <div className="checkbox-container">
+                          {item?.userData?.checkboxes?.map((checkboxValue) => (
+                            <span key={checkboxValue} className={checkboxValue === "Personal" ? 'checkbox-value' : "checkbox-values"}>
+                              {checkboxValue}
+                            </span>
+                          ))}
+                        </div>
+                        <div className='d-flex justify-content-between'>
+                          <Button type='primary' onClick={() => handleDelete(item?.userData?.id)}>
+                            Delete
+                          </Button>
+                          <Button type='primary' style={{ backgroundColor: 'green', color: 'white' }} onClick={() => showModalUpdate(item?.userData)}>
+                            Update
+                          </Button>
+                        </div>
+                      </Card>
+                    </Col>
+                  ))}
                   <Card onClick={showModal} style={{ width: '290px', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }} className='mt-2 mb-3'>
                     <h3 style={{ fontSize: "70px" }} >+</h3>
                   </Card>
@@ -282,7 +274,8 @@ export default function StickyHome() {
                       <Input name="title" onChange={handleChange} />
                     </Form.Item>
                     <Form.Item label="Description"  >
-                      <TextArea rows={4} name="description" onChange={handleChange} />
+                      {/* <TextArea rows={4} name="description" onChange={handleChange} /> */}
+                      <ReactQuill theme="snow" value={value} onChange={setValue} />
                     </Form.Item>
                     <Form.Item label="Date"  >
                       <DatePicker name="date" onChange={(date, dateString) => handleDateAndColor('date', dateString)} />
@@ -296,7 +289,6 @@ export default function StickyHome() {
                     <Checkbox value="Work" onChange={(e) => handleCheckBox(e, "Work")}>
                       Work
                     </Checkbox>
-
                   </Form>
                 </Modal>
                 <Modal title="Update Sticky Note" open={isModalUpdate} onOk={handleOkUpdate} onCancel={handleCancelUpdate}>
