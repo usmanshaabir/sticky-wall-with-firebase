@@ -2,6 +2,10 @@
 @import './scss//stickyWall.scss';
 
 
-#root {
+.center-container {
     background-color: #c6d3c2;
+}
+
+.ant-menu-item {
+    line-height: 30px !important;
 }

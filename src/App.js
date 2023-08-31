@@ -1,11 +1,10 @@
 import './App.scss';
-import Home from './pages/frontend/Home'
-
+import Routing from './pages/Routing';
 
 function App() {
   return (
     <>
-      <Home />
+      <Routing />
     </>
   );
 }
