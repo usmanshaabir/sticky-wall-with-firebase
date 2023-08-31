@@ -8,6 +8,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { Checkbox } from 'antd';
 import { collection, deleteDoc, doc, getDocs, setDoc, updateDoc } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
 const { Sider, Content } = Layout;
 const initState = { title: '', date: '' }
 
@@ -30,6 +31,7 @@ export default function StickyHome() {
   const { Search } = Input;
   const { TextArea } = Input;
   const onSearch = (value) => console.log(value);
+  const navigate = useNavigate()
 
   const upcomingNotes = fetch.filter(item => item.userData.date > today);
   const todayNotes = fetch.filter(item => item.userData.date === today);
@@ -55,7 +57,7 @@ export default function StickyHome() {
   }
   const handleOk = async () => {
     const { title, date } = state;
-    const userData = { title, description:value, date, color: selectedColor, checkboxes: selectedCheckboxes, id: Math.random().toString(36).slice(2) };
+    const userData = { title, description: value, date, color: selectedColor, checkboxes: selectedCheckboxes, id: Math.random().toString(36).slice(2) };
     try {
       await setDoc(doc(firestore, "stickyUser", userData.id), { userData });
       console.log("data stored in firebase Successfully");
@@ -154,8 +156,12 @@ export default function StickyHome() {
   const category = (days) => {
     setSelectedCategory(days)
     setSelectedTag(null)
-    console.log("tags" ,selectedTag)
+    console.log("tags", selectedTag)
 
+  }
+
+  const handleLogout = () => {
+    navigate('/')
   }
 
   return (
@@ -227,7 +233,7 @@ export default function StickyHome() {
                 <Menu.Item icon={<SettingOutlined />}>
                   Settings
                 </Menu.Item>
-                <Menu.Item icon={<AntDesignOutlined />} >
+                <Menu.Item icon={<AntDesignOutlined />} onClick={handleLogout}>
                   Sign Out
                 </Menu.Item>
               </Menu>
