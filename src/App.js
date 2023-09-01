@@ -1,10 +1,14 @@
 import './App.scss';
 import Routing from './pages/Routing';
+import AuthContextProvider from "./contexts/AuthContext"
+
 
 function App() {
   return (
     <>
-      <Routing />
+      <AuthContextProvider>
+        <Routing />
+      </AuthContextProvider>
     </>
   );
 }

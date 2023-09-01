@@ -1,10 +1,10 @@
-import React from 'react';
-import UserLogin from './UserLogin';
+import React from 'react'
+import Login from './Login'
 
 export default function index() {
     return (
         <>
-            <UserLogin />
+            <Login />
         </>
     )
 }
