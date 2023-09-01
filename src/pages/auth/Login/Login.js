@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import "../../../scss/Login.scss"
 import { Button, Checkbox, Form, Input } from 'antd';
 import { auth } from '../../../config/firebase'
 import { useNavigate } from 'react-router-dom';
